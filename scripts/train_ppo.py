@@ -1,3 +1,4 @@
+import os
 import torch
 import imageio
 from procgenac.utils import make_env, Storage
@@ -116,6 +117,8 @@ while step < total_steps:
 print("Completed training!")
 # Save snapshot of current policy
 model_path = f"../models/policy_{env_name}.pt"
+if not os.path.isdir(os.path.dirname(model_path)):
+    os.makedirs(os.path.dirname(model_path))
 torch.save(policy.state_dict, model_path)
 
 # Make evaluation environment (unseen levels)
@@ -146,5 +149,7 @@ print("Average return:", total_reward)
 
 # Save frames as video
 video_path = f"../videos/vid_{env_name}.mp4"
+if not os.path.isdir(os.path.dirname(video_path)):
+    os.makedirs(os.path.dirname(video_path))
 frames = torch.stack(frames)
 imageio.mimsave(video_path, frames, fps=25)

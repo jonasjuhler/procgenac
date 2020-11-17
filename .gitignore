@@ -132,5 +132,5 @@ dmypy.json
 .vscode/
 
 # Project specific folders
-models/
-videos/
+models/*
+videos/*
