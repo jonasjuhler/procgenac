@@ -1,0 +1,6 @@
+name: procgenac
+dependencies:
+  - jupyterlab
+  - pip
+  - pip:
+    - -e .[test]
