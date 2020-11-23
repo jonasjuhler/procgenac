@@ -83,6 +83,7 @@ while step < total_steps:
 
         # Iterate over batches of transitions
         generator = storage.get_generator(batch_size)
+
         for batch in generator:
             b_obs, b_action, b_log_pi, b_value, b_returns, b_advantage = batch
 
