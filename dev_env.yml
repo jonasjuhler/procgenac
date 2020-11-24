@@ -1,4 +1,8 @@
 name: procgenac
+channels:
+  - conda-forge
+  - anaconda
+  - pytorch
 dependencies:
   - jupyterlab
   - pip
