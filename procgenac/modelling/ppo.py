@@ -4,32 +4,7 @@ import torch.nn.functional as F
 from procgenac.utils import orthogonal_init
 
 
-class Flatten(nn.Module):
-    def forward(self, x):
-        return x.view(x.size(0), -1)
-
-
-class Encoder(nn.Module):
-    def __init__(self, in_channels, feature_dim):
-        super().__init__()
-        self.layers = nn.Sequential(
-            nn.Conv2d(in_channels=in_channels, out_channels=32, kernel_size=8, stride=4),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1),
-            nn.ReLU(),
-            Flatten(),
-            nn.Linear(in_features=1024, out_features=feature_dim),
-            nn.ReLU(),
-        )
-        self.apply(orthogonal_init)
-
-    def forward(self, x):
-        return self.layers(x)
-
-
-class Policy(nn.Module):
+class PolicyPPO(nn.Module):
     def __init__(self, encoder, feature_dim, num_actions, c1, c2, eps, device):
         super().__init__()
         self.encoder = encoder
@@ -64,13 +39,15 @@ class Policy(nn.Module):
         policy_reward = torch.min(ratio * advantage, clipped_ratio * advantage)
         return policy_reward
 
-    def value_loss(self, value, old_reward):
+    def value_loss(self, value, future_reward):
         # Clipped value objective
-        # TODO: Decide if this should be reward/return/advantage?
-        vf_loss = F.mse_loss(value, old_reward)
+        vf_loss = F.mse_loss(value, future_reward)
         return self.c1 * vf_loss
 
     def entropy_loss(self, dist):
         # Entropy loss - we think of entropy as a regularization term,
         # maximizing entropy makes sure policy remains stochastic.
         return self.c2 * dist.entropy()
+
+    def compute_ppo_loss(self, pi_loss, value_loss, entropy_loss):
+        return torch.mean(-1 * (pi_loss - value_loss + entropy_loss))

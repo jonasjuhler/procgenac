@@ -1,13 +1,14 @@
 import contextlib
 import os
-from abc import ABC, abstractmethod
-import numpy as np
-import gym
 import random
-from gym import spaces
-from collections import deque
+import numpy as np
 import torch
 import torch.nn as nn
+import gym
+import imageio
+from collections import deque
+from abc import ABC, abstractmethod
+from gym import spaces
 from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 from procgen import ProcgenEnv
 
@@ -76,6 +77,7 @@ class Storage:
         self.done = torch.zeros(self.num_steps, self.num_envs)
         self.log_prob = torch.zeros(self.num_steps, self.num_envs)
         self.value = torch.zeros(self.num_steps + 1, self.num_envs)
+        self.deltas = torch.zeros(self.num_steps, self.num_envs)
         self.returns = torch.zeros(self.num_steps, self.num_envs)
         self.advantage = torch.zeros(self.num_steps, self.num_envs)
         self.info = deque(maxlen=self.num_steps)
@@ -97,14 +99,18 @@ class Storage:
 
     def compute_return_advantage(self):
         advantage = 0
+        future_reward = 0
+
         for i in reversed(range(self.num_steps)):
-            delta = (
-                self.reward[i] + self.gamma * self.value[i + 1] * (1 - self.done[i])
-            ) - self.value[i]
-            advantage = self.gamma * self.lmbda * advantage * (1 - self.done[i]) + delta
+            mask = 1 - self.done[i]
+            future_reward = self.reward[i] + self.gamma * future_reward * mask
+            delta = self.reward[i] + self.gamma * self.value[i + 1] * mask - self.value[i]
+
+            advantage = self.gamma * self.lmbda * advantage * mask + delta
+            self.returns[i] = future_reward
+            self.deltas[i] = delta
             self.advantage[i] = advantage
 
-        self.returns = self.advantage + self.value[:-1]
         if self.normalize_advantage:
             self.advantage = (self.advantage - self.advantage.mean()) / (
                 self.advantage.std() + 1e-9
@@ -120,8 +126,9 @@ class Storage:
             log_prob = self.log_prob.reshape(-1)[indices].to(device=self.device)
             value = self.value[:-1].reshape(-1)[indices].to(device=self.device)
             returns = self.returns.reshape(-1)[indices].to(device=self.device)
+            delta = self.deltas.reshape(-1)[indices].to(device=self.device)
             advantage = self.advantage.reshape(-1)[indices].to(device=self.device)
-            yield obs, action, log_prob, value, returns, advantage
+            yield obs, action, log_prob, value, returns, delta, advantage
 
     def get_reward(self, normalized_reward=True):
         if normalized_reward:
@@ -142,6 +149,21 @@ def orthogonal_init(module, gain=nn.init.calculate_gain("relu")):
         nn.init.orthogonal_(module.weight.data, gain)
         nn.init.constant_(module.bias.data, 0)
     return module
+
+
+def save_model(model, model_name, env_name):
+    model_path = f"../models/{model_name}_{env_name}.pt"
+    if not os.path.isdir(os.path.dirname(model_path)):
+        os.makedirs(os.path.dirname(model_path))
+    torch.save(model.state_dict, model_path)
+
+
+def save_video(frames, model_name, env_name):
+    video_path = f"../videos/vid_{model_name}_{env_name}.mp4"
+    if not os.path.isdir(os.path.dirname(video_path)):
+        os.makedirs(os.path.dirname(video_path))
+    frames = torch.stack(frames)
+    imageio.mimsave(video_path, frames, fps=25)
 
 
 """
