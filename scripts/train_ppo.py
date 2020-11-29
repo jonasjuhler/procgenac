@@ -13,10 +13,10 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 print(f"Running on {device}")
 
 # Environment hyperparameters
-total_steps = 200000
+total_steps = 2000000
 num_envs = 32
 num_steps = 256
-num_levels = 10
+num_levels = 500
 env_name = "starpilot"
 
 # Model hyperparameters
@@ -33,7 +33,7 @@ env = make_env(n_envs=num_envs, env_name=env_name, num_levels=num_levels)
 in_channels = 3  # RGB
 n_actions = env.action_space.n
 encoder = Encoder(in_channels=in_channels, feature_dim=feature_dim)
-policy = PolicyPPO(
+policy_ppo = PolicyPPO(
     encoder=encoder,
     feature_dim=feature_dim,
     num_actions=n_actions,
@@ -42,11 +42,11 @@ policy = PolicyPPO(
     eps=eps,
     device=device,
 )
-policy.to(device=device)
+policy_ppo.to(device=device)
 
 # Define optimizer
 # these are reasonable values but probably not optimal
-optimizer = torch.optim.Adam(policy.parameters(), lr=5e-3, eps=1e-5)
+optimizer = torch.optim.Adam(policy_ppo.parameters(), lr=5e-3, eps=1e-5)
 
 # Define temporary storage
 # we use this to collect transitions during each iteration
@@ -58,10 +58,10 @@ step = 0
 while step < total_steps:
 
     # Use policy to collect data for num_steps steps
-    policy.eval()
+    policy_ppo.eval()
     for _ in range(num_steps):
         # Use policy
-        action, log_prob, value = policy.act(obs)
+        action, log_prob, value = policy_ppo.act(obs)
 
         # Take step in environment
         next_obs, reward, done, info = env.step(action)
@@ -73,14 +73,14 @@ while step < total_steps:
         obs = next_obs
 
     # Add the last observation to collected data
-    _, _, value = policy.act(obs)
+    _, _, value = policy_ppo.act(obs)
     storage.store_last(obs, value)
 
     # Compute return and advantage
     storage.compute_return_advantage()
 
     # Optimize policy
-    policy.train()
+    policy_ppo.train()
     for epoch in range(num_epochs):
 
         # Iterate over batches of transitions
@@ -90,24 +90,24 @@ while step < total_steps:
             b_obs, b_action, b_log_pi, b_value, b_returns, b_delta, b_advantage = batch
 
             # Get current policy outputs
-            dist, value = policy(b_obs)
+            dist, value = policy_ppo(b_obs)
             log_pi = dist.log_prob(b_action)
 
             # Clipped policy objective
-            pi_loss = policy.pi_loss(log_pi, b_log_pi, b_advantage)
+            pi_loss = policy_ppo.pi_loss(log_pi, b_log_pi, b_advantage)
 
             # Clipped value function objective
-            vf_loss = policy.value_loss(value, b_returns)
+            vf_loss = policy_ppo.value_loss(value, b_returns)
 
             # Entropy loss
-            entropy = policy.entropy_loss(dist)
+            entropy = policy_ppo.entropy_loss(dist)
 
             # Backpropagate losses
-            loss = policy.compute_ppo_loss(pi_loss, vf_loss, entropy)
+            loss = policy_ppo.compute_ppo_loss(pi_loss, vf_loss, entropy)
             loss.backward()
 
             # Clip gradients
-            torch.nn.utils.clip_grad_norm_(policy.parameters(), grad_eps)
+            torch.nn.utils.clip_grad_norm_(policy_ppo.parameters(), grad_eps)
 
             # Update policy
             optimizer.step()
@@ -119,7 +119,7 @@ while step < total_steps:
 
 print("Completed training!")
 # Save snapshot of current policy
-save_model(policy, model_name, env_name)
+save_model(policy_ppo, model_name, env_name)
 
 # Make evaluation environment (unseen levels)
 eval_env = make_env(num_envs, env_name=env_name, start_level=num_levels, num_levels=num_levels)
@@ -129,11 +129,11 @@ frames = []
 total_reward = []
 
 # Evaluate policy
-policy.eval()
+policy_ppo.eval()
 for _ in range(512):
 
     # Use policy
-    action, log_prob, value = policy.act(obs)
+    action, log_prob, value = policy_ppo.act(obs)
 
     # Take step in environment
     obs, reward, done, info = eval_env.step(action)

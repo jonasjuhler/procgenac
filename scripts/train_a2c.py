@@ -13,10 +13,10 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 print(f"Running on {device}")
 
 # Environment hyperparameters
-total_steps = 200000
+total_steps = 2000000
 num_envs = 32
 num_steps = 256
-num_levels = 10
+num_levels = 500
 env_name = "starpilot"
 
 # Model hyperparameters
@@ -105,7 +105,7 @@ while step < total_steps:
             loss.backward()
 
             # Clip gradients
-            # torch.nn.utils.clip_grad_norm_(policy.parameters(), grad_eps)
+            torch.nn.utils.clip_grad_norm_(a2c_model.parameters(), grad_eps)
 
             # Update policy
             optimizer.step()
