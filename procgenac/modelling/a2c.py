@@ -7,6 +7,7 @@ from procgenac.utils import orthogonal_init
 class A2C(nn.Module):
     def __init__(self, encoder, feature_dim, num_actions, c1, c2, grad_eps, device):
         super().__init__()
+        self.name = "A2C"
         self.encoder = encoder
         self.actor = orthogonal_init(nn.Linear(feature_dim, num_actions), gain=0.01)
         self.critic = orthogonal_init(nn.Linear(feature_dim, 1), gain=1.0)

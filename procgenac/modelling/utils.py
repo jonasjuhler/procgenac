@@ -1,6 +1,101 @@
 import os
 import torch
-from procgenac.utils import Storage, save_video
+from procgenac.utils import Storage, save_video, make_env, save_rewards
+from procgenac.modelling.encoder import Encoder
+from procgenac.modelling.ppo import PolicyPPO
+from procgenac.modelling.a2c import A2C
+
+
+def training_pipeline(param_args, path_to_base):
+
+    # Define device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Training env initialization
+    env_name = param_args.env_name
+    num_envs = int(param_args.num_envs)
+    num_levels = int(param_args.num_levels)
+    env = make_env(n_envs=num_envs, env_name=env_name, num_levels=num_levels)
+
+    # Model hyperparameters
+    model_type = param_args.model_type
+    feature_dim = int(param_args.feature_dim)
+    encoder = Encoder(in_channels=3, feature_dim=feature_dim)
+
+    # Define network
+    if model_type == "A2C":
+        model = A2C(
+            encoder=encoder,
+            feature_dim=feature_dim,
+            num_actions=env.action_space.n,
+            c1=float(param_args.value_coef),
+            c2=float(param_args.entropy_coef),
+            grad_eps=float(param_args.grad_eps),
+            device=device,
+        )
+    elif model_type == "PolicyPPO":
+        model = PolicyPPO(
+            encoder=encoder,
+            feature_dim=feature_dim,
+            num_actions=env.action_space.n,
+            c1=float(param_args.value_coef),
+            c2=float(param_args.entropy_coef),
+            eps=float(param_args.eps),
+            grad_eps=float(param_args.grad_eps),
+            device=device,
+        )
+
+    # Evaluation env (unseen levels)
+    eval_env = make_env(
+        num_envs,
+        env_name=env_name,
+        start_level=num_levels,
+        num_levels=num_levels,
+        normalize_reward=False,
+    )
+
+    # Train model
+    model, (steps, rewards) = train_model(
+        model=model,
+        env=env,
+        device=device,
+        num_epochs=int(param_args.num_epochs),
+        batch_size=int(param_args.batch_size),
+        adam_lr=float(param_args.adam_lr),
+        adam_eps=float(param_args.adam_eps),
+        num_steps=int(param_args.num_steps),
+        total_steps=int(param_args.total_steps),
+        get_test_error=bool(int(param_args.get_test)),
+        eval_env=eval_env,
+        verbose=True,
+    )
+
+    # Store training results
+    filepath = os.path.join(path_to_base, "results", "rewards", f"{model.name}_{env_name}.csv")
+    save_rewards(steps, rewards, filepath=filepath)
+
+    # Save snapshot of current policy
+    filepath = os.path.join(path_to_base, "models", f"{model.name}_{env_name}.pt")
+    save_model(model, filepath=filepath)
+
+    # Make env for generating a video
+    video_env = make_env(
+        n_envs=1,
+        env_name=env_name,
+        start_level=num_levels,
+        num_levels=num_levels,
+        normalize_reward=False,
+    )
+    obs = video_env.reset()
+    filepath = os.path.join(path_to_base, "results", "videos", f"{model.name}_{env_name}.mp4")
+    total_reward, _ = evaluate_model(
+        model=model,
+        eval_env=video_env,
+        obs=obs,
+        num_steps=512,
+        video=True,
+        video_filepath=filepath,
+    )
 
 
 def train_model(
@@ -106,14 +201,13 @@ def train_model(
     return model, (steps, rewards)
 
 
-def save_model(model, filename):
-    model_path = f"../models/{filename}"
-    if not os.path.isdir(os.path.dirname(model_path)):
-        os.makedirs(os.path.dirname(model_path))
-    torch.save(model.state_dict, model_path)
+def save_model(model, filepath):
+    if not os.path.isdir(os.path.dirname(filepath)):
+        os.makedirs(os.path.dirname(filepath))
+    torch.save(model.state_dict, filepath)
 
 
-def evaluate_model(model, eval_env, obs, num_steps=512, video=False, video_filename=None):
+def evaluate_model(model, eval_env, obs, num_steps=512, video=False, video_filepath=None):
     frames = []
     total_reward = []
 
@@ -135,7 +229,7 @@ def evaluate_model(model, eval_env, obs, num_steps=512, video=False, video_filen
 
     if video:
         # Save frames as video
-        save_video(frames, video_filename)
+        save_video(frames, video_filepath)
 
     # Calculate total reward
     return torch.stack(total_reward).sum(0), obs
