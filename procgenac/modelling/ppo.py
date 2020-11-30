@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from procgenac.utils import orthogonal_init
 
 
-class PolicyPPO(nn.Module):
+class PPO(nn.Module):
     def __init__(self, encoder, feature_dim, num_actions, c1, c2, eps, grad_eps, device):
         super().__init__()
         self.name = "PolicyPPO"

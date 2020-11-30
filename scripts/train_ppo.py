@@ -1,7 +1,7 @@
 import torch
 from procgenac.utils import make_env, save_rewards
 from procgenac.modelling.utils import train_model, save_model, evaluate_model
-from procgenac.modelling.ppo import PolicyPPO
+from procgenac.modelling.ppo import PPO
 from procgenac.modelling.encoder import Encoder
 import time
 
@@ -42,7 +42,7 @@ eval_env = make_env(
 )
 
 # Define network
-policy_ppo = PolicyPPO(
+policy_ppo = PPO(
     encoder=Encoder(in_channels=3, feature_dim=feature_dim),
     feature_dim=feature_dim,
     num_actions=env.action_space.n,
