@@ -159,11 +159,11 @@ def save_video(frames, filename):
     imageio.mimsave(video_path, frames, fps=25)
 
 
-def _plot_mean_std(ax, x, y):
+def _plot_mean_std(ax, x, y, **kwargs):
     y_mean = y.mean(1)
     y_std = y.std(1)
-    ax.plot(x, y_mean)
-    ax.fill_between(x, y_mean - y_std, y_std + y_std)
+    ax.plot(x, y_mean, **kwargs)
+    ax.fill_between(x, y_mean - y_std, y_mean + y_std, alpha=0.5, **kwargs)
     return ax
 
 
@@ -171,10 +171,10 @@ def plot_results(ax, steps, rewards):
     if isinstance(rewards, tuple):
         train = rewards[0]
         test = rewards[1]
-        ax = _plot_mean_std(ax, steps, train)
-        ax = _plot_mean_std(ax, steps, test)
+        ax = _plot_mean_std(ax, steps, train, color="darkslategrey")
+        ax = _plot_mean_std(ax, steps, test, color="maroon")
     else:
-        ax = _plot_mean_std(ax, steps, rewards)
+        ax = _plot_mean_std(ax, steps, rewards, color="darkslategrey")
     return ax
 
 
