@@ -2,7 +2,7 @@ import argparse
 from procgenac.modelling.utils import training_pipeline
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--model_type", default="PolicyPPO")
+parser.add_argument("--model_type", default="PPO")
 parser.add_argument("--env_name", default="starpilot")
 parser.add_argument("--num_envs", default="32")
 parser.add_argument("--num_levels", default="200")
