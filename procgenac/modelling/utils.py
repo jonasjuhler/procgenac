@@ -2,7 +2,7 @@ import os
 import torch
 from procgenac.utils import Storage, save_video, make_env, save_rewards
 from procgenac.modelling.encoder import Encoder
-from procgenac.modelling.ppo import PolicyPPO
+from procgenac.modelling.ppo import PPO
 from procgenac.modelling.a2c import A2C
 
 
@@ -33,8 +33,8 @@ def training_pipeline(param_args, path_to_base):
             grad_eps=float(param_args.grad_eps),
             device=device,
         )
-    elif model_type == "PolicyPPO":
-        model = PolicyPPO(
+    elif model_type == "PPO":
+        model = PPO(
             encoder=encoder,
             feature_dim=feature_dim,
             num_actions=env.action_space.n,
