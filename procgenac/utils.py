@@ -58,7 +58,7 @@ class Storage:
         num_steps,
         num_envs,
         device,
-        gamma=0.99,
+        gamma=0.999,
         lmbda=0.95,
         normalize_advantage=True,
     ):
