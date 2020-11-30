@@ -5,7 +5,7 @@ from procgenac.utils import orthogonal_init
 
 
 class PolicyPPO(nn.Module):
-    def __init__(self, encoder, feature_dim, num_actions, c1, c2, eps, device):
+    def __init__(self, encoder, feature_dim, num_actions, c1, c2, eps, grad_eps, device):
         super().__init__()
         self.encoder = encoder
         self.policy = orthogonal_init(nn.Linear(feature_dim, num_actions), gain=0.01)
@@ -13,6 +13,7 @@ class PolicyPPO(nn.Module):
         self.c1 = c1
         self.c2 = c2
         self.eps = eps
+        self.grad_eps = grad_eps
         self.device = device
 
     def act(self, x):
@@ -32,22 +33,37 @@ class PolicyPPO(nn.Module):
 
         return dist, value
 
-    def pi_loss(self, log_pi, old_log_pi, advantage):
+    def _pi_loss(self, log_pi, old_log_pi, advantage):
         # Clipped policy objective
         ratio = torch.exp(log_pi - old_log_pi)
         clipped_ratio = ratio.clamp(min=1.0 - self.eps, max=1.0 + self.eps)
         policy_reward = torch.min(ratio * advantage, clipped_ratio * advantage)
         return policy_reward
 
-    def value_loss(self, value, future_reward):
+    def _value_loss(self, value, future_reward):
         # Clipped value objective
         vf_loss = F.mse_loss(value, future_reward)
-        return self.c1 * vf_loss
+        return vf_loss
 
-    def entropy_loss(self, dist):
+    def _entropy_loss(self, dist):
         # Entropy loss - we think of entropy as a regularization term,
         # maximizing entropy makes sure policy remains stochastic.
-        return self.c2 * dist.entropy()
+        return dist.entropy()
 
-    def compute_ppo_loss(self, pi_loss, value_loss, entropy_loss):
-        return torch.mean(-1 * (pi_loss - value_loss + entropy_loss))
+    def criterion(self, batch, policy, value):
+        b_obs, b_action, b_log_pi, b_value, b_returns, b_delta, b_advantage = batch
+
+        # Calculate log prob of action given policy
+        log_pi = policy.log_prob(b_action)
+
+        # Clipped policy objective
+        pi_loss = self._pi_loss(log_pi, b_log_pi, b_advantage)
+
+        # Clipped value function objective
+        vf_loss = self._value_loss(value, b_returns)
+
+        # Entropy loss
+        entropy = self._entropy_loss(policy)
+
+        # Return sum of weighted losses
+        return torch.mean(-1 * (pi_loss - self.c1 * vf_loss + self.c2 * entropy))

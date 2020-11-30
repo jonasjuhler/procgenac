@@ -140,7 +140,7 @@ class Storage:
         else:
             reward = self.reward
 
-        return reward.mean(1).sum(0)
+        return reward.sum(0)
 
 
 def orthogonal_init(module, gain=nn.init.calculate_gain("relu")):
@@ -151,19 +151,31 @@ def orthogonal_init(module, gain=nn.init.calculate_gain("relu")):
     return module
 
 
-def save_model(model, model_name, env_name):
-    model_path = f"../models/{model_name}_{env_name}.pt"
-    if not os.path.isdir(os.path.dirname(model_path)):
-        os.makedirs(os.path.dirname(model_path))
-    torch.save(model.state_dict, model_path)
-
-
-def save_video(frames, model_name, env_name):
-    video_path = f"../videos/vid_{model_name}_{env_name}.mp4"
+def save_video(frames, filename):
+    video_path = f"../videos/{filename}"
     if not os.path.isdir(os.path.dirname(video_path)):
         os.makedirs(os.path.dirname(video_path))
     frames = torch.stack(frames)
     imageio.mimsave(video_path, frames, fps=25)
+
+
+def _plot_mean_std(ax, x, y):
+    y_mean = y.mean(1)
+    y_std = y.std(1)
+    ax.plot(x, y_mean)
+    ax.fill_between(x, y_mean - y_std, y_std + y_std)
+    return ax
+
+
+def plot_results(ax, steps, rewards):
+    if isinstance(rewards, tuple):
+        train = rewards[0]
+        test = rewards[1]
+        ax = _plot_mean_std(ax, steps, train)
+        ax = _plot_mean_std(ax, steps, test)
+    else:
+        ax = _plot_mean_std(ax, steps, rewards)
+    return ax
 
 
 """
