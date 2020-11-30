@@ -152,7 +152,7 @@ def orthogonal_init(module, gain=nn.init.calculate_gain("relu")):
 
 
 def save_video(frames, filename):
-    video_path = f"../videos/{filename}"
+    video_path = f"../results/videos/{filename}"
     if not os.path.isdir(os.path.dirname(video_path)):
         os.makedirs(os.path.dirname(video_path))
     frames = torch.stack(frames)
@@ -176,6 +176,33 @@ def plot_results(ax, steps, rewards):
     else:
         ax = _plot_mean_std(ax, steps, rewards, color="darkslategrey")
     return ax
+
+
+def save_rewards(steps, rewards, filename):
+    reward_path = f"../results/rewards/{filename}"
+    if not os.path.isdir(os.path.dirname(reward_path)):
+        os.makedirs(os.path.dirname(reward_path))
+
+    if isinstance(rewards, tuple):
+        df = pd.DataFrame.from_dict(
+            {
+                "steps": steps,
+                "train_rewards_mean": rewards[0].mean(1),
+                "train_rewards_std": rewards[0].std(1),
+                "test_rewards_mean": rewards[1].mean(1),
+                "test_rewards_std": rewards[1].std(1),
+            }
+        )
+    else:
+        df = pd.DataFrame.from_dict(
+            {
+                "steps": steps,
+                "train_rewards_mean": rewards.mean(1),
+                "train_rewards_std": rewards.std(1),
+            }
+        )
+
+    df.to_csv(reward_path, index=False)
 
 
 """

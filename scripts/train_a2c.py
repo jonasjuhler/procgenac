@@ -1,6 +1,5 @@
 import torch
-import matplotlib.pyplot as plt
-from procgenac.utils import make_env, plot_results
+from procgenac.utils import make_env, save_results
 from procgenac.modelling.utils import train_model, save_model, evaluate_model
 from procgenac.modelling.a2c import A2C
 from procgenac.modelling.encoder import Encoder
@@ -69,12 +68,8 @@ a2c_model, (steps, rewards) = train_model(
 )
 print("Completed training!")
 
+# Store training results
 
-# Plot training results
-# filename = f"{model_name}_{env_name}.pdf"
-fig, ax = plt.subplots(1, 1)
-ax = plot_results(ax, steps, rewards)
-plt.show()
 
 # Save snapshot of current policy
 filename = f"{model_name}_{env_name}.pt"
