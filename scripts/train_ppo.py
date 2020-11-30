@@ -1,5 +1,5 @@
 import torch
-from procgenac.utils import make_env
+from procgenac.utils import make_env, save_rewards
 from procgenac.modelling.utils import train_model, save_model, evaluate_model
 from procgenac.modelling.ppo import PolicyPPO
 from procgenac.modelling.encoder import Encoder
@@ -18,7 +18,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Running on {device}")
 
 # Environment hyperparameters
-total_steps = 10_000
+total_steps = 2_000_000
 num_envs = 32
 num_steps = 256
 num_levels = 200
@@ -69,6 +69,10 @@ policy_ppo, (steps, rewards) = train_model(
     verbose=True,
 )
 print("Completed training!")
+
+# Store training results
+filename = f"{model_name}_{env_name}.csv"
+save_rewards(steps, rewards, filename)
 
 # Save snapshot of current policy
 filename = f"{model_name}_{env_name}.pt"

@@ -160,22 +160,23 @@ def save_video(frames, filename):
     imageio.mimsave(video_path, frames, fps=25)
 
 
-def _plot_mean_std(ax, x, y, **kwargs):
-    y_mean = y.mean(1)
-    y_std = y.std(1)
+def _plot_mean_std(ax, x, y_mean, y_std, **kwargs):
     ax.plot(x, y_mean, **kwargs)
     ax.fill_between(x, y_mean - y_std, y_mean + y_std, alpha=0.5, **kwargs)
     return ax
 
 
-def plot_results(ax, steps, rewards):
-    if isinstance(rewards, tuple):
-        train = rewards[0]
-        test = rewards[1]
-        ax = _plot_mean_std(ax, steps, train, color="darkslategrey")
-        ax = _plot_mean_std(ax, steps, test, color="maroon")
+def plot_results(ax, df):
+    steps = df["steps"]
+    train_mean = df["train_rewards_mean"]
+    train_std = df["train_rewards_std"]
+    if len(df.columns) != 3:
+        test_mean = df["test_rewards_mean"]
+        test_std = df["test_rewards_std"]
+        ax = _plot_mean_std(ax, steps, train_mean, train_std, color="darkslategrey")
+        ax = _plot_mean_std(ax, steps, test_mean, test_std, color="maroon")
     else:
-        ax = _plot_mean_std(ax, steps, rewards, color="darkslategrey")
+        ax = _plot_mean_std(ax, steps, train_mean, train_std, color="darkslategrey")
     return ax
 
 
