@@ -80,13 +80,7 @@ def training_pipeline(param_args, path_to_base, verbose=False, prod=True):
     save_model(model, filepath=filepath)
 
     # Make env for generating a video
-    video_env = make_env(
-        n_envs=1,
-        env_name=env_name,
-        start_level=num_levels,
-        num_levels=num_levels,
-        normalize_reward=False,
-    )
+    video_env = make_env(n_envs=1, env_name=env_name, normalize_reward=False, seed=42)
     obs = video_env.reset()
     filepath = os.path.join(path_to_base, "results", "videos", f"{model.name}_{env_name}.mp4")
     total_reward, _ = evaluate_model(
