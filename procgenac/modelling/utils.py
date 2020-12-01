@@ -20,7 +20,7 @@ def training_pipeline(param_args, path_to_base, verbose=False, prod=True):
     env_name = param_args.env_name
     num_envs = int(param_args.num_envs)
     num_levels = int(param_args.num_levels)
-    env = make_env(n_envs=num_envs, env_name=env_name, num_levels=num_levels)
+    env = make_env(n_envs=num_envs, env_name=env_name, num_levels=num_levels, seed=0)
 
     # Model hyperparameters
     model_type = param_args.model_type
@@ -52,14 +52,8 @@ def training_pipeline(param_args, path_to_base, verbose=False, prod=True):
     if not prod:
         model.name = "test_" + model.name
 
-    # Evaluation env (unseen levels)
-    eval_env = make_env(
-        num_envs,
-        env_name=env_name,
-        start_level=num_levels,
-        num_levels=num_levels,
-        normalize_reward=False,
-    )
+    # Evaluation env (full distribution with new seed)
+    eval_env = make_env(n_envs=num_envs, env_name=env_name, normalize_reward=False, seed=42)
 
     # Train model
     model, (steps, rewards) = train_model(
