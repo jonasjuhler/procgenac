@@ -1,4 +1,5 @@
 import os
+import time
 import torch
 from procgenac.utils import Storage, save_video, make_env, save_rewards
 from procgenac.modelling.encoder import Encoder
@@ -6,10 +7,14 @@ from procgenac.modelling.ppo import PPO
 from procgenac.modelling.a2c import A2C
 
 
-def training_pipeline(param_args, path_to_base):
+def training_pipeline(param_args, path_to_base, verbose=False, prod=True):
 
     # Define device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    if verbose:
+        before = time.time()
+        print(f"Running on {device}")
 
     # Training env initialization
     env_name = param_args.env_name
@@ -44,6 +49,8 @@ def training_pipeline(param_args, path_to_base):
             grad_eps=float(param_args.grad_eps),
             device=device,
         )
+    if not prod:
+        model.name = "test_" + model.name
 
     # Evaluation env (unseen levels)
     eval_env = make_env(
@@ -92,10 +99,14 @@ def training_pipeline(param_args, path_to_base):
         model=model,
         eval_env=video_env,
         obs=obs,
-        num_steps=512,
+        num_steps=int(param_args.num_steps),
         video=True,
         video_filepath=filepath,
     )
+
+    if verbose:
+        print("Video return:", total_reward.mean(0).item())
+        print(f"Time taken: {(time.time() - before)/60:.1f} minutes")
 
 
 def train_model(
@@ -153,10 +164,16 @@ def train_model(
             steps.append(step)
             train_rewards.append(storage.get_reward())
             if verbose:
-                print(f"Step: {step}\tMean reward: {storage.get_reward().mean()}")
+                print(
+                    f"Step: {step} \tMean train reward: {storage.get_reward().mean():.4f}",
+                    end="" if get_test_error else "\n",
+                )
             if get_test_error:
-                test_rew, eval_obs = evaluate_model(model, eval_env, eval_obs)
+                test_rew, eval_obs = evaluate_model(model, eval_env, eval_obs, num_steps=num_steps)
                 test_rewards.append(test_rew)
+                if verbose:
+                    print(f" \tMean test reward: {test_rew.mean().item():.4f}")
+
         step += env.num_envs * num_steps
 
         # Add the last observation to collected data
@@ -207,7 +224,7 @@ def save_model(model, filepath):
     torch.save(model.state_dict, filepath)
 
 
-def evaluate_model(model, eval_env, obs, num_steps=512, video=False, video_filepath=None):
+def evaluate_model(model, eval_env, obs, num_steps=256, video=False, video_filepath=None):
     frames = []
     total_reward = []
 

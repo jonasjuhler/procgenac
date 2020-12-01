@@ -21,4 +21,4 @@ parser.add_argument("--get_test", default="0")
 
 param_args = parser.parse_args()
 
-training_pipeline(param_args, path_to_base="../../")
+training_pipeline(param_args, path_to_base="../../", verbose=True)
