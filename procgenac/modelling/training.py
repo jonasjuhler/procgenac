@@ -19,6 +19,7 @@ def training_pipeline(hyperparams, path_to_base, verbose=False):
     env = make_env(
         n_envs=hyperparams.num_envs,
         env_name=env_name,
+        start_level=0,
         num_levels=hyperparams.num_levels,
         seed=0,
     )
@@ -27,10 +28,16 @@ def training_pipeline(hyperparams, path_to_base, verbose=False):
     model = init_model(hyperparams, device, env)
     if hyperparams.test_run:
         model.name = "test_" + model.name
+    else:
+        model.name += f"_id{hyperparams.model_id}"
 
     # Evaluation env (full distribution with new seed)
     eval_env = make_env(
-        n_envs=hyperparams.num_envs, env_name=env_name, normalize_reward=False, seed=42
+        n_envs=hyperparams.num_envs,
+        env_name=env_name,
+        start_level=hyperparams.num_levels,
+        num_levels=0,  # full distribution
+        normalize_reward=False,
     )
 
     # Train model
@@ -58,7 +65,13 @@ def training_pipeline(hyperparams, path_to_base, verbose=False):
     save_model(model, filepath=filepath)
 
     # Make env for generating a video
-    video_env = make_env(n_envs=1, env_name=env_name, normalize_reward=False, seed=42)
+    video_env = make_env(
+        n_envs=1,
+        env_name=env_name,
+        normalize_reward=False,
+        start_level=hyperparams.num_levels,
+        num_levels=0,
+    )
     obs = video_env.reset()
     filepath = os.path.join(path_to_base, "results", "videos", f"{model.name}_{env_name}.mp4")
     total_reward, _ = evaluate_model(
