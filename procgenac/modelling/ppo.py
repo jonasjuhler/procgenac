@@ -7,7 +7,7 @@ from procgenac.utils import orthogonal_init
 class PPO(nn.Module):
     def __init__(self, encoder, feature_dim, num_actions, c1, c2, eps, grad_eps, device):
         super().__init__()
-        self.name = "PolicyPPO"
+        self.name = "PPO"
         self.encoder = encoder
         self.policy = orthogonal_init(nn.Linear(feature_dim, num_actions), gain=0.01)
         self.value = orthogonal_init(nn.Linear(feature_dim, 1), gain=1.0)
