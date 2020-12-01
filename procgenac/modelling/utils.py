@@ -153,14 +153,14 @@ def train_model(
             train_rewards.append(storage.get_reward())
             if verbose:
                 print(
-                    f"Step: {step} \tMean train reward: {storage.get_reward().mean():.4f}",
+                    f"Step: {step:<9}\tMean train reward: {storage.get_reward().mean():.4f}",
                     end="" if get_test_error else "\n",
                 )
             if get_test_error:
                 test_rew, eval_obs = evaluate_model(model, eval_env, eval_obs, num_steps=num_steps)
                 test_rewards.append(test_rew)
                 if verbose:
-                    print(f" \tMean test reward: {test_rew.mean().item():.4f}")
+                    print(f"\tMean test reward: {test_rew.mean().item():.4f}")
 
         step += env.num_envs * num_steps
 
