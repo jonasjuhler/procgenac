@@ -14,8 +14,8 @@ class PPOParams:
         self.grad_eps = "0.5"
         self.num_epochs = "3"
         self.batch_size = "1024"
-        self.adam_lr = "5e-4"  # 2e-4 for A2C
-        self.adam_eps = "1e-5"  # 1e-4 for A2C
+        self.adam_lr = "5e-4"
+        self.adam_eps = "1e-5"
         self.num_steps = "256"
         self.total_steps = "10000"
         self.get_test = "1"
