@@ -54,5 +54,5 @@ class Hyperparameters:
         self.adam_eps = 1e-4 if model_type == "A2C" else 1e-5
         self.num_steps = 256
         self.total_steps = 10000
-        self.get_test = 1
-        self.test_run = 1
+        self.get_test = True
+        self.test_run = True
