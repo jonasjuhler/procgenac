@@ -21,7 +21,7 @@ def training_pipeline(hyperparams, path_to_base, verbose=False):
         env_name=env_name,
         start_level=0,
         num_levels=hyperparams.num_levels,
-        seed=0,
+        normalize_reward=False,
     )
 
     # Define network
@@ -68,9 +68,9 @@ def training_pipeline(hyperparams, path_to_base, verbose=False):
     video_env = make_env(
         n_envs=1,
         env_name=env_name,
-        normalize_reward=False,
         start_level=hyperparams.num_levels,
         num_levels=0,
+        normalize_reward=False,
     )
     obs = video_env.reset()
     filepath = os.path.join(path_to_base, "results", "videos", f"{model.name}_{env_name}.mp4")
@@ -78,7 +78,7 @@ def training_pipeline(hyperparams, path_to_base, verbose=False):
         model=model,
         eval_env=video_env,
         obs=obs,
-        num_steps=hyperparams.num_steps,
+        num_steps=1024,
         video=True,
         video_filepath=filepath,
     )

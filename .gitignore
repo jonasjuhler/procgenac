@@ -134,6 +134,6 @@ dmypy.json
 # Project specific folders
 models/*
 videos/*
-jobscripts/*
+hpcfiles/*
 results/*
 testing/*
