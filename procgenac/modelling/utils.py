@@ -1,14 +1,18 @@
 import os
 import torch
-from procgenac.modelling.encoder import Encoder
+from procgenac.modelling.encoder import Nature, Impala
 from procgenac.modelling.ppo import PPO
 from procgenac.modelling.a2c import A2C
 
 
 def init_model(hyperparams, device, env):
+    encoder_dict = {
+        "nature": Nature(in_channels=3, feature_dim=hyperparams.feature_dim),
+        "impala": Impala(in_channels=3, feature_dim=hyperparams.feature_dim),
+    }
     if hyperparams.model_type == "A2C":
         model = A2C(
-            encoder=Encoder(in_channels=3, feature_dim=hyperparams.feature_dim),
+            encoder=encoder_dict[hyperparams.cnn_type],
             feature_dim=hyperparams.feature_dim,
             num_actions=env.action_space.n,
             c1=hyperparams.value_coef,
@@ -18,7 +22,7 @@ def init_model(hyperparams, device, env):
         )
     elif hyperparams.model_type == "PPO":
         model = PPO(
-            encoder=Encoder(in_channels=3, feature_dim=hyperparams.feature_dim),
+            encoder=encoder_dict[hyperparams.cnn_type],
             feature_dim=hyperparams.feature_dim,
             num_actions=env.action_space.n,
             c1=hyperparams.value_coef,
