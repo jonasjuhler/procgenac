@@ -7,6 +7,7 @@ matplotlib.rcParams["text.usetex"] = True
 g_ite = 1
 
 models_df = pd.read_csv("../results/model_configs.csv")
+hp_cols = models_df.columns[models_df.columns != "model_id"]
 max_test_rews = []
 step_max_test = []
 
@@ -36,29 +37,18 @@ for i, mt in enumerate(["A2C", "PPO"]):
     ax = plot_results(ax, rew_df, colors=cols[i], include_train=False, model_label=mt)
 formatter = get_formatter()
 ax.xaxis.set_major_formatter(formatter)
-# ax.set_title("A2C vs. PPO")
 ax.set_xlabel("Steps")
 ax.set_ylabel("Reward")
 plt.legend()
 figpath = f"../results/figures/A2CvsPPO_{g_ite}.pdf"
 plt.savefig(figpath, format="pdf")
+# plt.show()
 
 ppo_df = models_df[models_df.model_type == "PPO"].copy()
 a2c_df = models_df[models_df.model_type == "A2C"].copy()
-
 comparison_dict = {
-    "PPO": {
-        "num_levels": [50, 200],
-        "adam_lrs": [0.0005, 0.002],
-        "adam_eps": [1e-4, 1e-5],
-        "grad_eps": [0.5, 0.7],
-    },
-    "A2C": {
-        "num_levels": [50, 200],
-        "adam_lrs": [2e-4, 2e-5],
-        "adam_eps": [1e-4, 1e-5],
-        "grad_eps": [0.3, 0.5],
-    },
+    "PPO": {c: ppo_df[c].unique() for c in hp_cols if len(ppo_df[c].unique()) > 1},
+    "A2C": {c: a2c_df[c].unique() for c in hp_cols if len(a2c_df[c].unique()) > 1},
 }
 
 for mt in ["A2C", "PPO"]:
@@ -96,3 +86,4 @@ for mt in ["A2C", "PPO"]:
         plt.legend()
         figpath = f"../results/figures/{mt}_{k}_{g_ite}.pdf"
         plt.savefig(figpath, format="pdf")
+        # plt.show()
