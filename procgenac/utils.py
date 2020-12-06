@@ -8,10 +8,12 @@ import torch.nn as nn
 import gym
 import imageio
 from collections import deque
+from matplotlib.ticker import FuncFormatter
 from abc import ABC, abstractmethod
 from gym import spaces
 from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 from procgen import ProcgenEnv
+
 
 """
 Utility functions for the deep RL projects that I supervise in 02456 Deep Learning @ DTU.
@@ -159,24 +161,45 @@ def save_video(frames, filepath):
     imageio.mimsave(filepath, frames, fps=25)
 
 
-def _plot_mean_std(ax, x, y_mean, y_std, **kwargs):
-    ax.plot(x, y_mean, **kwargs)
+def _plot_mean_std(ax, x, y_mean, y_std, label, **kwargs):
+    ax.plot(x, y_mean, label=label, **kwargs)
     ax.fill_between(x, y_mean - y_std, y_mean + y_std, alpha=0.5, **kwargs)
     return ax
 
 
-def plot_results(ax, df):
+def plot_results(ax, df, colors=["darkslategrey", "maroon"], include_train=True, model_label=None):
     steps = df["steps"]
     train_mean = df["train_rewards_mean"]
     train_std = df["train_rewards_std"]
-    if len(df.columns) != 3:
-        test_mean = df["test_rewards_mean"]
-        test_std = df["test_rewards_std"]
-        ax = _plot_mean_std(ax, steps, train_mean, train_std, color="darkslategrey")
-        ax = _plot_mean_std(ax, steps, test_mean, test_std, color="maroon")
-    else:
-        ax = _plot_mean_std(ax, steps, train_mean, train_std, color="darkslategrey")
+    test_mean = df["test_rewards_mean"]
+    test_std = df["test_rewards_std"]
+    model_label = f" (\\texttt{{{model_label}}})" if model_label else ""
+    ax = _plot_mean_std(
+        ax, steps, test_mean, test_std, label="Test reward" + model_label, color=colors[0]
+    )
+    if include_train:
+        ax = _plot_mean_std(
+            ax, steps, train_mean, train_std, label="Train reward" + model_label, color=colors[1]
+        )
     return ax
+
+
+def get_formatter():
+    def human_format(num, pos):
+        magnitude = 0
+        while abs(num) >= 1000:
+            magnitude += 1
+            num /= 1000.0
+
+        prefix = ["", "K", "M", "G", "T", "P"][magnitude]
+        # add more suffixes if you need them
+        if num.is_integer():
+            tick = f"{num:.0f}{prefix}"
+        else:
+            tick = f"{num:.2f}{prefix}"
+        return tick
+
+    return FuncFormatter(human_format)
 
 
 def save_rewards(steps, rewards, filepath):
