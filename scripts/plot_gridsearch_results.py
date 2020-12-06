@@ -43,6 +43,8 @@ plt.legend()
 figpath = f"../results/figures/A2CvsPPO_{g_ite}.pdf"
 plt.savefig(figpath, format="pdf")
 
+ppo_df = models_df[models_df.model_type == "PPO"].copy()
+a2c_df = models_df[models_df.model_type == "A2C"].copy()
 
 comparison_dict = {
     "PPO": {
