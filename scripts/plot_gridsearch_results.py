@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from procgenac.utils import plot_results, get_formatter
 
 matplotlib.rcParams["text.usetex"] = True
-g_ite = 1
+g_ite = 2
 
 models_df = pd.read_csv("../results/model_configs.csv")
 hp_cols = models_df.columns[models_df.columns != "model_id"]
@@ -16,8 +16,12 @@ for idx in models_df.index:
     m_id = row.model_id
     m_type = row.model_type
     env_name = row.env_name
-
-    rew_df = pd.read_csv(f"../results/rewards/{m_type}_id{m_id}_{env_name}.csv")
+    try:
+        rew_df = pd.read_csv(f"../results/rewards/{m_type}_id{m_id}_{env_name}.csv")
+    except FileNotFoundError:
+        max_test_rews.append(0)
+        step_max_test.append(0)
+        continue
     max_test_rews.append(rew_df.test_rewards_mean.max())
     step_max_test.append(int(rew_df.loc[rew_df.test_rewards_mean.idxmax()].steps))
 
