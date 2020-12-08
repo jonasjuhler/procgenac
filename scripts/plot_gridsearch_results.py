@@ -4,9 +4,11 @@ import matplotlib.pyplot as plt
 from procgenac.utils import plot_results, get_formatter
 
 matplotlib.rcParams["text.usetex"] = True
-g_ite = 2
+g_ite = 3
+from_id = 0
 
 models_df = pd.read_csv("../results/model_configs.csv")
+models_df = models_df.loc[from_id:].copy().reset_index(drop=True)
 hp_cols = models_df.columns[models_df.columns != "model_id"]
 max_test_rews = []
 step_max_test = []
@@ -35,6 +37,8 @@ for i, mt in enumerate(["A2C", "PPO"]):
         (models_df.model_type == mt) & (models_df.step_max_test > 5_000_000)
     ].test_reward.idxmax()
     row = models_df.loc[best_m_idx]
+    print(f"\nBEST MODEL STATS ({mt}):")
+    print(row)
     m_id = row.model_id
     m_type = row.model_type
     rew_df = pd.read_csv(f"../results/rewards/{m_type}_id{m_id}_{env_name}.csv")
