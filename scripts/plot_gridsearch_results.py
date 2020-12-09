@@ -56,8 +56,8 @@ ax.xaxis.set_major_formatter(formatter)
 ax.set_xlabel("Steps")
 ax.set_ylabel("Reward")
 plt.legend()
-figpath = f"../results/figures/A2CvsPPO_{g_ite}.pdf"
-plt.savefig(figpath, format="pdf")
+figpath = f"../results/figures/A2CvsPPO_{g_ite}.png"
+plt.savefig(figpath, dpi=1200)
 # plt.show()
 
 ppo_df = models_df[models_df.model_type == "PPO"].copy()
@@ -100,6 +100,6 @@ for mt in ["A2C", "PPO"]:
         ax.set_xlabel("Steps")
         ax.set_ylabel("Reward")
         plt.legend()
-        figpath = f"../results/figures/{mt}_{k}_{g_ite}.pdf"
-        plt.savefig(figpath, format="pdf")
+        figpath = f"../results/figures/{mt}_{k}_{g_ite}.png"
+        plt.savefig(figpath, dpi=1200)
         # plt.show()
