@@ -15,26 +15,24 @@ plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
 plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
-g_ite = 3
-from_id = 0
-idxs = [12, 10]
-v = ["200", "30"]
+idxs = [6, 3]
+k = "cnn_type"
+v = ["impala", "nature"]
 
-mt = "PPO"
+mt = "A2C"
 fig, ax = plt.subplots(1, 1, figsize=(7, 4))
 cols = [["darkslategrey", "lightskyblue"], ["maroon", "darksalmon"]]
-k = "num_levels"
+
 for i, hp in enumerate(v):
-    best_m_idx = idxs[i]
-    rew_df = pd.read_csv(f"../results/rewards/{mt}_id{best_m_idx}_starpilot.csv")
-    inc_train = True if k == "num_levels" else False
-    k_lab = "training\\_levels"
+    idx = idxs[i]
+    rew_df = pd.read_csv(f"../results/rewards/{mt}_id{idx}_starpilot.csv")
+    k_lab = k.replace("_", "\\_")
     ax = plot_results(
         ax,
         rew_df,
         colors=cols[i],
-        include_train=inc_train,
-        include_std=False,
+        include_train=False,
+        include_std=True,
         model_label=f"{k_lab}={hp}",
     )
 
@@ -43,6 +41,6 @@ ax.xaxis.set_major_formatter(formatter)
 ax.set_xlabel("Steps")
 ax.set_ylabel("Reward")
 plt.legend()
-figpath = "../results/figures/num_levels_generalization.png"
+figpath = "../results/figures/A2C_impala_nature.png"
 plt.savefig(figpath, dpi=1200)
 plt.show()
