@@ -44,5 +44,5 @@ ax.set_xlabel("Steps")
 ax.set_ylabel("Reward")
 plt.legend()
 figpath = "../results/figures/num_levels_generalization.png"
-plt.savefig(figpath, dpi=1200)
+plt.savefig(figpath, dpi=600)
 plt.show()

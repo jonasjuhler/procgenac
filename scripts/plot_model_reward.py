@@ -42,5 +42,5 @@ ax.set_xlabel("Steps")
 ax.set_ylabel("Reward")
 plt.legend()
 figpath = "../results/figures/A2C_impala_nature.png"
-plt.savefig(figpath, dpi=1200)
+plt.savefig(figpath, dpi=600)
 plt.show()
