@@ -4,11 +4,19 @@ import matplotlib.pyplot as plt
 from procgenac.utils import plot_results, get_formatter
 
 matplotlib.rcParams["text.usetex"] = True
-g_ite = 3
-from_id = 0
+SMALL_SIZE = 14
+MEDIUM_SIZE = 16
+BIGGER_SIZE = 18
+plt.rc("font", size=SMALL_SIZE)  # controls default text sizes
+plt.rc("axes", titlesize=SMALL_SIZE)  # fontsize of the axes title
+plt.rc("axes", labelsize=MEDIUM_SIZE)  # fontsize of the x and y labels
+plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
+plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
+plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
+g_ite = 4
 
 models_df = pd.read_csv("../results/model_configs.csv")
-models_df = models_df.loc[from_id:].copy().reset_index(drop=True)
 hp_cols = models_df.columns[models_df.columns != "model_id"]
 max_test_rews = []
 step_max_test = []
