@@ -3,9 +3,10 @@ from setuptools import find_packages, setup
 install_requires = open("requirements.txt").read().strip().split("\n")
 
 extras = {
-    "test": [
+    "dev": [
         "flake8>=3.8.4",
         "black==20.8b1",
+        "jupyterlab"
     ]
 }
 
