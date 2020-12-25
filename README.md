@@ -14,20 +14,20 @@ Make sure that conda is up to date with
 
 Clone the repository to the desired destination
 
-`git clone https://github.com/jonasjuhlern/procgenac.git`
+`$ git clone https://github.com/jonasjuhlern/procgenac.git`
 
 Create a development environment directly from the dev_env YAML file.
 
-`conda env create --file dev_env.yml`
+`$ conda env create --file dev_env.yml`
 
 ### 2. Not using conda
 
 If only using pip for package management and using some other tool for environments then first create the environemnt.
 
-`some command to create env`
+`$ some command to create env`
 
 Then pip install the project itself as a development environment (from the root folder).
 
-`cd /path/to/procgenac`
+`$ cd /path/to/procgenac`
 
-`pip install .[dev]`
+`$ pip install .[dev]`
