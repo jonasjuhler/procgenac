@@ -14,7 +14,7 @@ plt.rc("xtick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
 plt.rc("ytick", labelsize=SMALL_SIZE)  # fontsize of the tick labels
 plt.rc("legend", fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc("figure", titlesize=BIGGER_SIZE)  # fontsize of the figure title
-g_ite = 4
+g_ite = 5
 
 models_df = pd.read_csv("../results/model_configs.csv")
 hp_cols = models_df.columns[models_df.columns != "model_id"]
@@ -39,7 +39,7 @@ models_df["test_reward"] = max_test_rews
 models_df["step_max_test"] = step_max_test
 
 fig, ax = plt.subplots(1, 1, figsize=(7, 4))
-cols = [["darkslategrey", "lightskyblue"], ["maroon", "darksalmon"]]
+cols = [["darkslategrey", "lightskyblue"], ["darksalmon", "maroon"]]
 for i, mt in enumerate(["A2C", "PPO"]):
     best_m_idx = models_df[
         (models_df.model_type == mt) & (models_df.step_max_test > 5_000_000)
@@ -50,14 +50,17 @@ for i, mt in enumerate(["A2C", "PPO"]):
     m_id = row.model_id
     m_type = row.model_type
     rew_df = pd.read_csv(f"../results/rewards/{m_type}_id{m_id}_{env_name}.csv")
-    ax = plot_results(ax, rew_df, colors=cols[i], include_train=False, model_label=mt)
+    ax = plot_results(
+        ax, rew_df, colors=cols[i], include_train=False, include_std=False, model_label=mt
+    )
 formatter = get_formatter()
 ax.xaxis.set_major_formatter(formatter)
 ax.set_xlabel("Steps")
 ax.set_ylabel("Reward")
 plt.legend()
-figpath = f"../results/figures/A2CvsPPO_{g_ite}.png"
-plt.savefig(figpath, dpi=600)
+figpath = f"../results/figures/A2CvsPPO_{g_ite}.pdf"
+plt.tight_layout()
+plt.savefig(figpath)
 # plt.show()
 
 ppo_df = models_df[models_df.model_type == "PPO"].copy()
@@ -71,7 +74,7 @@ for mt in ["A2C", "PPO"]:
     comp_dict = comparison_dict[mt]
     for k, v in comp_dict.items():
         fig, ax = plt.subplots(1, 1, figsize=(7, 4))
-        cols = [["darkslategrey", "lightskyblue"], ["maroon", "darksalmon"]]
+        cols = [["darkslategrey", "lightskyblue"], ["darksalmon", "maroon"]]
         for i, hp in enumerate(v):
             hp_df = models_df[
                 (models_df.model_type == mt)
@@ -92,6 +95,7 @@ for mt in ["A2C", "PPO"]:
                 rew_df,
                 colors=cols[i],
                 include_train=inc_train,
+                include_std=False,
                 model_label=f"{k_lab}={hp}",
             )
 
@@ -100,6 +104,7 @@ for mt in ["A2C", "PPO"]:
         ax.set_xlabel("Steps")
         ax.set_ylabel("Reward")
         plt.legend()
-        figpath = f"../results/figures/{mt}_{k}_{g_ite}.png"
-        plt.savefig(figpath, dpi=600)
+        plt.tight_layout()
+        figpath = f"../results/figures/{mt}_{k}_{g_ite}.pdf"
+        plt.savefig(figpath)
         # plt.show()
