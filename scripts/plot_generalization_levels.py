@@ -43,6 +43,7 @@ ax.xaxis.set_major_formatter(formatter)
 ax.set_xlabel("Steps")
 ax.set_ylabel("Reward")
 plt.legend()
-figpath = "../results/figures/num_levels_generalization.png"
-plt.savefig(figpath, dpi=600)
+plt.tight_layout()
+figpath = "../results/figures/num_levels_generalization.pdf"
+plt.savefig(figpath)
 plt.show()
