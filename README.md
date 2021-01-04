@@ -32,11 +32,23 @@ Simply run the notebook located at `scripts/recreate_results.ipynb`. Be sure to 
 
 Run the file `procgenac/hpcfiles/train.py` with your desired hyperparameters replaced with `<hyperparameter>`
 
-    python train.py --model_type <model_type> --env_name <env_name> --num_envs <num_envs> \
-        --num_levels <num_levels> --feature_dim <feature_dim> --value_coef <value_coef> \
-        --entropy_coef <entropy_coef> --eps <eps> --grad_eps <grad_eps> --num_epochs <num_epochs> \
-        --batch_size <batch_size> --adam_lr <adam_lr> --adam_eps <adam_eps> --num_steps <num_steps> \
-        --total_steps <total_steps> --cnn_type <cnn_type> --model_id <model_id>
+    $ python train.py --model_type <model_type> \
+        --env_name <env_name> \
+        --num_envs <num_envs> \
+        --num_levels <num_levels> \
+        --feature_dim <feature_dim> \
+        --value_coef <value_coef> \
+        --entropy_coef <entropy_coef> \
+        --eps <eps> \
+        --grad_eps <grad_eps> \
+        --num_epochs <num_epochs> \
+        --batch_size <batch_size> \
+        --adam_lr <adam_lr> \
+        --adam_eps <adam_eps> \
+        --num_steps <num_steps> \
+        --total_steps <total_steps> \
+        --cnn_type <cnn_type> \
+        --model_id <model_id>
 
 When the model has trained the results will be available in folders.
 
