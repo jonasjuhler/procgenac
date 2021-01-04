@@ -44,6 +44,7 @@ class Hyperparameters:
     def __init__(self, model_type):
         assert model_type in ["A2C", "PPO"], "Model type has to be A2C or PPO"
         self.model_type = model_type
+        self.cnn_type = "impala"
         self.env_name = "starpilot"
         self.num_envs = 32
         self.num_levels = 200
@@ -60,3 +61,4 @@ class Hyperparameters:
         self.total_steps = 10000
         self.get_test = True
         self.test_run = True
+        self.model_id = 0
