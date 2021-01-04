@@ -75,9 +75,10 @@ Create a development environment directly from the dev_env YAML file.
 
 ### 2. Not using conda
 
-If only using pip for package management and using some other tool for environments then first create the environemnt.
+If only using pip for package management and using some other tool for environments then first create the environemnt and activate it.
 
-`$ some command to create env`
+    $ some command to create env
+    $ some command to activate env
 
 Then pip install the project itself as a development environment (from the root folder).
 
